@@ -40,26 +40,6 @@ export default function Industries() {
     return () => window.removeEventListener("resize", updateScrollState);
   }, []);
 
-  // A rail that can only scroll horizontally will otherwise have its default
-  // wheel behavior scroll itself on vertical input, trapping the page mid-scroll.
-  // React's synthetic onWheel is passive, so preventDefault must happen on a
-  // manually-attached, non-passive native listener instead.
-  useEffect(() => {
-    const rail = railRef.current;
-    if (!rail) return;
-
-    const handleWheel = (event: WheelEvent) => {
-      const isVerticalGesture = Math.abs(event.deltaY) > Math.abs(event.deltaX);
-      if (!isVerticalGesture) return;
-
-      event.preventDefault();
-      window.scrollBy({ top: event.deltaY, left: 0 });
-    };
-
-    rail.addEventListener("wheel", handleWheel, { passive: false });
-    return () => rail.removeEventListener("wheel", handleWheel);
-  }, []);
-
   const scrollByCard = (direction: 1 | -1) => {
     const rail = railRef.current;
     if (!rail) return;
