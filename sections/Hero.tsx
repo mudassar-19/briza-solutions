@@ -118,7 +118,12 @@ export default function Hero() {
             </motion.div>
           </motion.div>
 
-          <div className="relative h-72 w-full sm:h-96 lg:h-[32rem]">
+          {/* Hidden outright below md, not just swapped for a fallback —
+              display:none removes it from layout entirely, so no empty
+              placeholder box (and no reserved grid gap) is left behind on
+              mobile. The 3D-vs-fallback choice below only matters once
+              this is actually visible, at md and up. */}
+          <div className="relative hidden h-72 w-full sm:h-96 md:block lg:h-[32rem]">
             {useStaticBackground ? <HeroFallback /> : <HeroScene />}
           </div>
         </div>
