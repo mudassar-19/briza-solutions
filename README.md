@@ -16,6 +16,17 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+### Lead intake ("Get Started" form + `/api/lead`)
+
+The Get Started form writes leads to a local SQLite database via Prisma. Before running `npm run dev` for the first time:
+
+```bash
+cp .env.example .env
+npx prisma migrate dev
+```
+
+See `.env.example` for the email (Resend) and future CRM-sync env vars — both are optional locally; the API route logs and skips them if unset.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
