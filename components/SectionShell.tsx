@@ -34,7 +34,15 @@ export default function SectionShell({
         className={`mx-auto max-w-7xl ${align === "center" ? "flex flex-col items-center" : ""}`}
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
+        // amount is a fraction of THIS element's own height, not the
+        // viewport's. A fixed fraction (e.g. 0.3) is fine for short
+        // sections, but a section whose content stacks to one column on
+        // mobile (Portfolio's card grid, most notably) can end up taller
+        // than viewportHeight / amount, making that fraction impossible to
+        // satisfy — the observer never fires and the section stays stuck
+        // at opacity: 0 forever. "some" (threshold 0) fires as soon as any
+        // part enters view, independent of element height.
+        viewport={{ once: true, amount: "some" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         {eyebrow && <span className="eyebrow text-teal">{eyebrow}</span>}

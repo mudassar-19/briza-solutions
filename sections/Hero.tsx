@@ -28,8 +28,11 @@ const itemVariants: Variants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
+// `null` until the media query has actually been checked client-side —
+// distinct from `false`, so the caller can treat "not yet confirmed
+// desktop" the same as "mobile" instead of briefly assuming desktop.
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
   useEffect(() => {
     const query = window.matchMedia("(max-width: 767px)");
@@ -45,7 +48,17 @@ function useIsMobile() {
 export default function Hero() {
   const prefersReducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
-  const useStaticBackground = prefersReducedMotion || isMobile;
+  // Defaults to the static fallback and only switches to the 3D scene once
+  // the viewport is *positively confirmed* to be desktop-width. Defaulting
+  // the other way (assume desktop until proven mobile) would render
+  // HeroScene on the very first pass for everyone, including mobile —
+  // next/dynamic kicks off the Three.js chunk import as soon as that
+  // component is rendered, so mobile visitors would still pay for the
+  // fetch (and risk a half-initialized WebGL canvas) even though the
+  // isMobile flip moments later swaps it back out. Requiring a positive
+  // "this is desktop" signal means the import is never even requested on
+  // mobile.
+  const useStaticBackground = isMobile !== false || prefersReducedMotion;
 
   return (
     <MotionConfig reducedMotion="user">
