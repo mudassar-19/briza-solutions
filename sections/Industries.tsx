@@ -17,6 +17,14 @@ export default function Industries() {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  const isDraggingRef = useRef(false);
+  const dragMovedRef = useRef(false);
+  const dragStartXRef = useRef(0);
+  const dragStartScrollLeftRef = useRef(0);
+  // Mirrors isDraggingRef for rendering: scroll-snap fights direct scrollLeft
+  // writes mid-drag, so snapping is suspended while dragging and restored on release.
+  const [isDragging, setIsDragging] = useState(false);
+
   const updateScrollState = () => {
     const rail = railRef.current;
     if (!rail) return;
@@ -32,12 +40,73 @@ export default function Industries() {
     return () => window.removeEventListener("resize", updateScrollState);
   }, []);
 
+  // A rail that can only scroll horizontally will otherwise have its default
+  // wheel behavior scroll itself on vertical input, trapping the page mid-scroll.
+  // React's synthetic onWheel is passive, so preventDefault must happen on a
+  // manually-attached, non-passive native listener instead.
+  useEffect(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const handleWheel = (event: WheelEvent) => {
+      const isVerticalGesture = Math.abs(event.deltaY) > Math.abs(event.deltaX);
+      if (!isVerticalGesture) return;
+
+      event.preventDefault();
+      window.scrollBy({ top: event.deltaY, left: 0 });
+    };
+
+    rail.addEventListener("wheel", handleWheel, { passive: false });
+    return () => rail.removeEventListener("wheel", handleWheel);
+  }, []);
+
   const scrollByCard = (direction: 1 | -1) => {
     const rail = railRef.current;
     if (!rail) return;
     const card = rail.querySelector<HTMLElement>("[data-card]");
     const distance = (card?.offsetWidth ?? 320) + 24;
     rail.scrollBy({ left: distance * direction, behavior: "smooth" });
+  };
+
+  // Touch swipe is handled natively by overflow-x-auto; this only adds
+  // click-and-drag support for mouse users.
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.pointerType !== "mouse") return;
+    const rail = railRef.current;
+    if (!rail) return;
+
+    isDraggingRef.current = true;
+    dragMovedRef.current = false;
+    dragStartXRef.current = event.clientX;
+    dragStartScrollLeftRef.current = rail.scrollLeft;
+    rail.setPointerCapture(event.pointerId);
+    setIsDragging(true);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    const rail = railRef.current;
+    if (!rail) return;
+
+    const deltaX = event.clientX - dragStartXRef.current;
+    if (Math.abs(deltaX) > 4) dragMovedRef.current = true;
+    rail.scrollLeft = dragStartScrollLeftRef.current - deltaX;
+  };
+
+  const endDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+    railRef.current?.releasePointerCapture(event.pointerId);
+    setIsDragging(false);
+  };
+
+  // Suppress the click that would otherwise fire on a card/link after a drag.
+  const handleClickCapture = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (dragMovedRef.current) {
+      event.preventDefault();
+      event.stopPropagation();
+      dragMovedRef.current = false;
+    }
   };
 
   return (
@@ -94,8 +163,18 @@ export default function Industries() {
         <div
           ref={railRef}
           onScroll={updateScrollState}
-          className="no-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4"
-          style={{ paddingLeft: railGutter, paddingRight: railGutter }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerLeave={endDrag}
+          onPointerCancel={endDrag}
+          onClickCapture={handleClickCapture}
+          className="no-scrollbar flex cursor-grab snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-4 active:cursor-grabbing"
+          style={{
+            paddingLeft: railGutter,
+            paddingRight: railGutter,
+            scrollSnapType: isDragging ? "none" : undefined,
+          }}
         >
           {industries.map((industry, index) => (
             <div

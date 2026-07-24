@@ -13,7 +13,7 @@ export default function BookACall() {
     >
       <p className="mt-4 max-w-2xl text-center text-lg text-navy/70">
         Grab 20 minutes on our calendar for a free discovery call — we&apos;ll
-        talk through your business and what automation could look like.
+        talk through your business and what we could build for it.
       </p>
 
       <div className="mt-10 w-full max-w-2xl">
