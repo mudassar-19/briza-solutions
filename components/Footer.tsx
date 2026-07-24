@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { brand, navLinks } from "@/lib/theme";
 import { contactInfo } from "@/lib/contact";
@@ -12,18 +13,15 @@ export default function Footer() {
       />
       <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-10 px-6 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Link
-            href="/#home"
-            className="flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-teal to-light-teal font-display text-base font-bold text-navy shadow-soft">
-              B
-            </span>
-            {brand.name}
+          <Link href="/#home" className="flex items-center transition-opacity hover:opacity-80">
+            <Image
+              src="/images/briza-logo.png"
+              alt={brand.name}
+              width={732}
+              height={354}
+              className="h-14 w-auto"
+            />
           </Link>
-          <p className="mt-4 font-display text-lg italic text-light-teal">
-            {brand.tagline}
-          </p>
         </div>
 
         <div>

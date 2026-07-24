@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
@@ -23,14 +24,15 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-light-teal bg-white/90 backdrop-blur-sm">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-        <Link
-          href="/#home"
-          className="group flex items-center gap-2.5 font-display text-xl font-semibold tracking-tight text-navy"
-        >
-          <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gradient-to-br from-teal to-navy font-display text-base font-bold text-white shadow-soft transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105">
-            B
-          </span>
-          {brand.name}
+        <Link href="/#home" className="flex items-center transition-opacity hover:opacity-80">
+          <Image
+            src="/images/briza-logo.png"
+            alt={brand.name}
+            width={732}
+            height={354}
+            priority
+            className="h-11 w-auto"
+          />
         </Link>
 
         <ul className="hidden items-center gap-8 lg:flex">
